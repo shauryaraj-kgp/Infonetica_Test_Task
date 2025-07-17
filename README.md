@@ -2,22 +2,18 @@
 
 ## 🔧 Quick Start
 
-1. **Navigate to the project directory:**
-   ```bash
-   cd WorkflowEngine
-   ```
-2. **Build the project (optional):**
+1. **Build the project (optional):**
    ```bash
    dotnet build
    ```
-3. **Run the API:**
+2. **Run the API:**
    ```bash
    dotnet run
    ```
    The API will start and listen on:  
    `http://localhost:5000`
 
-## 🌐 API Routes
+## API Routes
 
 * `POST /workflow-definitions` – Create workflow
 * `GET /workflow-definitions` – List all workflows
@@ -29,12 +25,12 @@
 * `GET /workflow-instances/{id}` – Get instance status + history
 * `POST /workflow-instances/{id}/actions/{actionId}` – Execute action
 
-## ⚡ Sample Payloads
+## Sample Payloads
 
 ### Create Workflow Definition
 ```json
 {
-  "id": "wf1",
+  "id": "work1",
   "states": [
     { "id": "draft", "name": "Draft", "isInitial": true, "isFinal": false, "enabled": true },
     { "id": "review", "name": "Review", "isInitial": false, "isFinal": false, "enabled": true },
@@ -53,7 +49,7 @@
 ### Execute Action
 `POST /workflow-instances/{instanceId}/actions/submit`
 
-## 📝 Notes & Assumptions
+## Notes & Assumptions
 
 - **All data is in-memory only.** When the app stops, all workflows and instances are lost.
 - **No database, no file persistence, no extra config.**
@@ -62,11 +58,7 @@
 - **Runs on port 5000** by default (see console output for confirmation).
 - **Test with curl, Postman, or any HTTP client.**
 
-## 💡 Design Notes
+## Design Notes
 - The codebase is as minimal as possible, with only the files needed for a working, in-memory workflow engine.
 - All business logic is in `WorkflowService`.
 - Models, storage, and endpoints are clearly separated for maintainability.
-
----
-
-If you have any questions or need to clarify requirements, see the code comments or contact the author. 
