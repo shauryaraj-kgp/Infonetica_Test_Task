@@ -19,36 +19,37 @@
 
 ---
 
+## Project Structure
+
+```
+Infonetica_Test_Task/
+  Models/                # Data models (State, Action, WorkflowDefinition, etc.)
+  Services/              # Business logic (WorkflowService)
+  Storage/               # In-memory repository implementation
+  Program.cs             # Main entry point and API endpoints
+  README.md              # Project documentation
+  WorkflowEngine.csproj  # Project file
+  appsettings.json       # App configuration
+```
+
+---
+
 ## API Reference
 
 ### Workflow Definitions
-- **POST `/workflow-definitions`**
-  - Create a new workflow definition. If `id` is omitted, one is auto-generated. Returns the created workflow or error.
-  - Body: WorkflowDefinition JSON (see example below)
-- **GET `/workflow-definitions`**
-  - List all workflow definitions.
-- **GET `/workflow-definitions/{id}`**
-  - Get a workflow definition by ID.
-- **GET `/workflow-definitions/{id}/states`**
-  - List all states for a workflow definition.
-- **GET `/workflow-definitions/{id}/actions`**
-  - List all actions for a workflow definition.
-- **POST `/workflow-definitions/{id}/states`**
-  - Add a state to an existing workflow definition. Returns the added state or error.
-  - Body: State JSON
-- **POST `/workflow-definitions/{id}/actions`**
-  - Add an action to an existing workflow definition. Returns the added action or error.
-  - Body: Action JSON
+- **POST `/workflow-definitions`** — Create a workflow definition.
+- **GET `/workflow-definitions`** — List all workflow definitions.
+- **GET `/workflow-definitions/{id}`** — Get a workflow definition by ID.
+- **GET `/workflow-definitions/{id}/states`** — List states for a workflow definition.
+- **GET `/workflow-definitions/{id}/actions`** — List actions for a workflow definition.
+- **POST `/workflow-definitions/{id}/states`** — Add a state to a workflow definition.
+- **POST `/workflow-definitions/{id}/actions`** — Add an action to a workflow definition.
 
 ### Workflow Instances
-- **POST `/workflow-instances?definitionId={id}`**
-  - Start a new workflow instance for the given workflow definition ID. Returns the new instance or error.
-- **GET `/workflow-instances`**
-  - List all workflow instances.
-- **GET `/workflow-instances/{id}`**
-  - Get a workflow instance by ID, including its current state and history.
-- **POST `/workflow-instances/{id}/actions/{actionId}`**
-  - Execute an action on a workflow instance. Returns the updated instance or error.
+- **POST `/workflow-instances?definitionId={id}`** — Start a new workflow instance.
+- **GET `/workflow-instances`** — List all workflow instances.
+- **GET `/workflow-instances/{id}`** — Get a workflow instance by ID.
+- **POST `/workflow-instances/{id}/actions/{actionId}`** — Execute an action on a workflow instance.
 
 ---
 
@@ -72,6 +73,7 @@ A sample workflow for tracking a pizza order lifecycle.
 ### Create Workflow Definition
 ```json
 {
+  "id": "pizza1",
   "states": [
     { "id": "ordered", "name": "Ordered", "isInitial": true, "isFinal": false, "enabled": true, "description": "Order placed" },
     { "id": "preparing", "name": "Preparing", "isInitial": false, "isFinal": false, "enabled": true, "description": "Preparing pizza" },
