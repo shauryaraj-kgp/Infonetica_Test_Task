@@ -4,24 +4,36 @@ using WorkflowEngine.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Register services
 builder.Services.AddSingleton<IRepository<WorkflowDefinition>, InMemoryRepository<WorkflowDefinition>>();
 builder.Services.AddSingleton<IRepository<WorkflowInstance>, InMemoryRepository<WorkflowInstance>>();
 builder.Services.AddSingleton<WorkflowService>();
 
 var app = builder.Build();
 
+// Create a workflow definition
 app.MapPost("/workflow-definitions", (WorkflowDefinition def, WorkflowService service) => {
-    if (!service.CreateWorkflowDefinition(def, out var error))
-        return Results.BadRequest(error);
+    try {
+        service.CreateWorkflowDefinition(def);
+        return Results.Ok(def);
+    } catch (Exception e) {
+        return Results.BadRequest(e.Message);
+    }
+});
+
+// Get a workflow definition by id
+app.MapGet("/workflow-definitions/{id}", (string id, IRepository<WorkflowDefinition> repo) => {
+    var def = repo.Get(id);
+    if (def == null) return Results.NotFound();
     return Results.Ok(def);
 });
 
-app.MapGet("/workflow-definitions/{id}", (string id, IRepository<WorkflowDefinition> repo) =>
-    repo.Get(id) is { } def ? Results.Ok(def) : Results.NotFound());
+// Get all workflow definitions
+app.MapGet("/workflow-definitions", (IRepository<WorkflowDefinition> repo) => {
+    return Results.Ok(repo.GetAll());
+});
 
-app.MapGet("/workflow-definitions", (IRepository<WorkflowDefinition> repo) =>
-    Results.Ok(repo.GetAll()));
-
+// Start a new workflow instance
 app.MapPost("/workflow-instances", (string definitionId, WorkflowService service) => {
     try {
         var instance = service.StartInstance(definitionId);
@@ -31,6 +43,7 @@ app.MapPost("/workflow-instances", (string definitionId, WorkflowService service
     }
 });
 
+// Execute an action on a workflow instance
 app.MapPost("/workflow-instances/{id}/actions/{actionId}", (string id, string actionId, WorkflowService service) => {
     try {
         var updated = service.ExecuteAction(id, actionId);
@@ -40,32 +53,50 @@ app.MapPost("/workflow-instances/{id}/actions/{actionId}", (string id, string ac
     }
 });
 
-app.MapGet("/workflow-instances/{id}", (string id, IRepository<WorkflowInstance> repo) =>
-    repo.Get(id) is { } inst ? Results.Ok(inst) : Results.NotFound());
+// Get a workflow instance by id
+app.MapGet("/workflow-instances/{id}", (string id, IRepository<WorkflowInstance> repo) => {
+    var inst = repo.Get(id);
+    if (inst == null) return Results.NotFound();
+    return Results.Ok(inst);
+});
 
-app.MapGet("/workflow-instances", (IRepository<WorkflowInstance> repo) =>
-    Results.Ok(repo.GetAll()));
+// Get all workflow instances
+app.MapGet("/workflow-instances", (IRepository<WorkflowInstance> repo) => {
+    return Results.Ok(repo.GetAll());
+});
 
+// Get all states for a workflow definition
 app.MapGet("/workflow-definitions/{id}/states", (string id, IRepository<WorkflowDefinition> repo) => {
     var def = repo.Get(id);
-    return def is null ? Results.NotFound() : Results.Ok(def.States);
+    if (def == null) return Results.NotFound();
+    return Results.Ok(def.States);
 });
 
+// Get all actions for a workflow definition
 app.MapGet("/workflow-definitions/{id}/actions", (string id, IRepository<WorkflowDefinition> repo) => {
     var def = repo.Get(id);
-    return def is null ? Results.NotFound() : Results.Ok(def.Actions);
+    if (def == null) return Results.NotFound();
+    return Results.Ok(def.Actions);
 });
 
+// Add a state to a workflow definition
 app.MapPost("/workflow-definitions/{id}/states", (string id, State state, WorkflowService service) => {
-    if (service.AddStateToWorkflow(id, state, out var error))
+    try {
+        service.AddStateToWorkflow(id, state);
         return Results.Ok(state);
-    return Results.BadRequest(error);
+    } catch (Exception e) {
+        return Results.BadRequest(e.Message);
+    }
 });
 
+// Add an action to a workflow definition
 app.MapPost("/workflow-definitions/{id}/actions", (string id, WorkflowEngine.Models.Action action, WorkflowService service) => {
-    if (service.AddActionToWorkflow(id, action, out var error))
+    try {
+        service.AddActionToWorkflow(id, action);
         return Results.Ok(action);
-    return Results.BadRequest(error);
+    } catch (Exception e) {
+        return Results.BadRequest(e.Message);
+    }
 });
 
 app.Run();
