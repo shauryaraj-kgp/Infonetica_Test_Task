@@ -10,10 +10,9 @@ builder.Services.AddSingleton<WorkflowService>();
 
 var app = builder.Build();
 
-app.MapPost("/workflow-definitions", (WorkflowDefinition def, WorkflowService service, IRepository<WorkflowDefinition> repo) => {
-    if (!service.IsValidDefinition(def, out var error))
+app.MapPost("/workflow-definitions", (WorkflowDefinition def, WorkflowService service) => {
+    if (!service.CreateWorkflowDefinition(def, out var error))
         return Results.BadRequest(error);
-    repo.Add(def);
     return Results.Ok(def);
 });
 
@@ -55,6 +54,18 @@ app.MapGet("/workflow-definitions/{id}/states", (string id, IRepository<Workflow
 app.MapGet("/workflow-definitions/{id}/actions", (string id, IRepository<WorkflowDefinition> repo) => {
     var def = repo.Get(id);
     return def is null ? Results.NotFound() : Results.Ok(def.Actions);
+});
+
+app.MapPost("/workflow-definitions/{id}/states", (string id, State state, WorkflowService service) => {
+    if (service.AddStateToWorkflow(id, state, out var error))
+        return Results.Ok(state);
+    return Results.BadRequest(error);
+});
+
+app.MapPost("/workflow-definitions/{id}/actions", (string id, WorkflowEngine.Models.Action action, WorkflowService service) => {
+    if (service.AddActionToWorkflow(id, action, out var error))
+        return Results.Ok(action);
+    return Results.BadRequest(error);
 });
 
 app.Run();
